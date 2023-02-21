@@ -69,8 +69,8 @@ class GoogleMapsScraper:
                 return -1
 
         #  element of the list specified according to ind
-        recent_rating_bt = self.driver.find_elements_by_xpath(
-            "//div[@role='menuitemradio']"
+        recent_rating_bt = self.driver.find_elements(
+            by=By.XPATH, value="//div[@role='menuitemradio']"
         )[ind]
         recent_rating_bt.click()
 
@@ -118,8 +118,9 @@ class GoogleMapsScraper:
                 self.driver.get(search_point_url)
 
             # Gambiarra to load all places into the page
-            scrollable_div = self.driver.find_element_by_css_selector(
-                "div.siAUzd-neVct.section-scrollbox.cYB2Ge-oHo7ed.cYB2Ge-ti6hGc > div[aria-label*='Results for']"
+            scrollable_div = self.driver.find_element(
+                by=By.CSS_SELECTOR,
+                value="div.siAUzd-neVct.section-scrollbox.cYB2Ge-oHo7ed.cYB2Ge-ti6hGc > div[aria-label*='Results for']",
             )
             for i in range(10):
                 self.driver.execute_script(
@@ -329,8 +330,8 @@ class GoogleMapsScraper:
     def __expand_reviews(self):
         # use XPath to load complete reviews
         # TODO: Subject to changes
-        links = self.driver.find_elements_by_xpath(
-            '//button[@jsaction="pane.review.expandReview"]'
+        links = self.driver.find_elements(
+            by=By.XPATH, value='//button[@jsaction="pane.review.expandReview"]'
         )
         for l in links:
             l.click()
@@ -338,8 +339,8 @@ class GoogleMapsScraper:
 
     def __scroll(self):
         # TODO: Subject to changes
-        scrollable_div = self.driver.find_element_by_css_selector(
-            "div.m6QErb.DxyBCb.kA9KIf.dS8AEf"
+        scrollable_div = self.driver.find_element(
+            by=By.CSS_SELECTOR, value="div.m6QErb.DxyBCb.kA9KIf.dS8AEf"
         )
         self.driver.execute_script(
             "arguments[0].scrollTop = arguments[0].scrollHeight", scrollable_div
