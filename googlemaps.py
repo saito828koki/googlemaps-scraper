@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
+import itertools
+import logging
+import time
+import traceback
+from datetime import datetime
+
+import numpy as np
 import pandas as pd
-from selenium.webdriver.support.ui import WebDriverWait
+from bs4 import BeautifulSoup
+from selenium import webdriver
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import NoSuchElementException
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from bs4 import BeautifulSoup
-from datetime import datetime
-import time
-import logging
-import traceback
-import numpy as np
-import itertools
-
 
 GM_WEBPAGE = "https://www.google.com/maps/"
 MAX_WAIT = 10

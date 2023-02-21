@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from googlemaps import GoogleMapsScraper
 import argparse
 import csv
-from termcolor import colored
-import time
 
+from termcolor import colored
+
+from googlemaps import GoogleMapsScraper
 
 ind = {"most_relevant": 0, "newest": 1, "highest_rating": 2, "lowest_rating": 3}
 HEADER = [

@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from pymongo import MongoClient
-from googlemaps import GoogleMapsScraper
-from datetime import datetime, timedelta
 import argparse
 import logging
-import sys
 import os
+import sys
+from datetime import datetime, timedelta
+
+from pymongo import MongoClient
+
+from googlemaps import GoogleMapsScraper
 
 DB_URL = "mongodb://localhost:27017/"
 DB_NAME = "googlemaps"
