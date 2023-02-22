@@ -229,78 +229,16 @@ class GoogleMapsScraper:
     def __parse(self, review):
         item = {}
 
-        try:
-            # TODO: Subject to changes
-            id_review = review["data-review-id"]
-        except Exception as e:
-            id_review = None
-
-        try:
-            # TODO: Subject to changes
-            username = review["aria-label"]
-        except Exception as e:
-            username = None
-
-        try:
-            # TODO: Subject to changes
-            review_text = self.__filter_string(
-                review.find("span", class_="wiI7pd").text
-            )
-        except Exception as e:
-            review_text = None
-
-        try:
-            # TODO: Subject to changes
-            rating = float(
-                review.find("span", class_="kvMYJc")["aria-label"].split(" ")[1]
-            )
-        except Exception as e:
-            rating = None
-
-        try:
-            # TODO: Subject to changes
-            relative_date = review.find("span", class_="rsqaWe").text
-        except Exception as e:
-            relative_date = None
-
-        try:
-            n_reviews_photos = (
-                review.find("div", class_="section-review-subtitle")
-                .find_all("span")[1]
-                .text
-            )
-            metadata = n_reviews_photos.split("\xe3\x83\xbb")
-            if len(metadata) == 3:
-                n_photos = int(metadata[2].split(" ")[0].replace(".", ""))
-            else:
-                n_photos = 0
-
-            idx = len(metadata)
-            n_reviews = int(metadata[idx - 1].split(" ")[0].replace(".", ""))
-
-        except Exception as e:
-            n_reviews = 0
-            n_photos = 0
-
-        try:
-            user_url = review.find("a")["href"]
-        except Exception as e:
-            user_url = None
+        id_review = review["data-review-id"]
+        username = review["aria-label"]
+        review_text = self.__filter_string(review.find("span", class_="wiI7pd").text)
+        rating = float(review.find("span", class_="kvMYJc")["aria-label"].split(" ")[1])
+        user_url = review.find("a")["href"]
 
         item["id_review"] = id_review
         item["caption"] = review_text
-
-        # depends on language, which depends on geolocation defined by Google Maps
-        # custom mapping to transform into date should be implemented
-        item["relative_date"] = relative_date
-
-        # store datetime of scraping and apply further processing to calculate
-        # correct date as retrieval_date - time(relative_date)
-        item["retrieval_date"] = datetime.now()
         item["rating"] = rating
         item["username"] = username
-        item["n_review_user"] = n_reviews
-        item["n_photo_user"] = n_photos
         item["url_user"] = user_url
 
         return item
