@@ -5,32 +5,39 @@ import logging
 import os
 import sys
 from datetime import datetime, timedelta
+import jaydebeapi
 
-from pymongo import MongoClient
+from dotenv import load_dotenv
 
 from googlemaps import GoogleMapsScraper
 
-DB_URL = "mongodb://localhost:27017/"
-DB_NAME = "googlemaps"
-COLLECTION_NAME = "review"
+load_dotenv()
+
+DRIVER = os.getenv("DRIVER")
+DB_URL = os.getenv("DB_URL")
+USERNAME = os.getenv("USERNAME")
+PASSWORD = os.getenv("PASSWORD")
+H2JAR_PATH = os.getenv("H2JAR_PATH")
 
 
 class Monitor:
-    def __init__(self, url_file, from_date, mongourl=DB_URL):
+    def __init__(self, url_file):
         # load urls file
         with open(url_file, "r") as furl:
             self.urls = [u.strip() for u in furl]
 
-        # min date review to scrape
-        self.min_date_review = datetime.strptime(from_date, "%Y-%m-%d")
-
         # logging
         self.logger = self.__get_logger()
+        # connect to H2 DATABASE
+        self.connection = jaydebeapi.connect(
+            DRIVER,
+            DB_URL,
+            [USERNAME, PASSWORD],
+            H2JAR_PATH,
+        )
+        self.cursor = self.connection.cursor()
 
     def scrape_gm_reviews(self):
-        # set connection to DB
-        collection = self.client[DB_NAME][COLLECTION_NAME]
-
         # init scraper and incremental add reviews
         # TO DO: pass logger as parameter to log into one single file?
         with GoogleMapsScraper() as scraper:
