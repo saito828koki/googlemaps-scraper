@@ -50,14 +50,12 @@ class Monitor:
                         n_new_reviews = 0
                         while not stop:
                             reviews = scraper.get_reviews(offset)
+                            if not reviews:
+                                break
+
                             for r in reviews:
-                                # calculate review date and compare to input min_date_review
-                                r["timestamp"] = self.__parse_relative_date(
-                                    r["relative_date"]
-                                )
-                                stop = self.__stop(r, collection)
+                                stop = self.__stop(r)
                                 if not stop:
-                                    collection.insert_one(r)
                                     n_new_reviews += 1
                                 else:
                                     break
