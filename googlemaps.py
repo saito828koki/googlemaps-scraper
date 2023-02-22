@@ -40,7 +40,7 @@ class GoogleMapsScraper:
 
         return True
 
-    def sort_by(self, url, ind):
+    def sort_by(self, url, ind: int):
         self.driver.get(url)
         self.__click_on_cookie_agreement()
 
