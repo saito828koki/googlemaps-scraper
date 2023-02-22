@@ -36,14 +36,14 @@ class Monitor:
         with GoogleMapsScraper() as scraper:
             for url in self.urls:
                 try:
-                    error = scraper.sort_by_date(url)
-                    if error == 0:
+                    status = scraper.sort_by(url, 1)  # sort by newest
+                    if status == 0:
                         stop = False
                         offset = 0
                         n_new_reviews = 0
                         while not stop:
-                            rlist = scraper.get_reviews(offset)
-                            for r in rlist:
+                            reviews = scraper.get_reviews(offset)
+                            for r in reviews:
                                 # calculate review date and compare to input min_date_review
                                 r["timestamp"] = self.__parse_relative_date(
                                     r["relative_date"]
@@ -54,7 +54,7 @@ class Monitor:
                                     n_new_reviews += 1
                                 else:
                                     break
-                            offset += len(rlist)
+                            offset += len(reviews)
 
                         # log total number
                         self.logger.info(
