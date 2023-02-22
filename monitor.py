@@ -19,10 +19,7 @@ class Monitor:
     def __init__(self, url_file, from_date, mongourl=DB_URL):
         # load urls file
         with open(url_file, "r") as furl:
-            self.urls = [u[:-1] for u in furl]
-
-        # define MongoDB connection
-        self.client = MongoClient(mongourl)
+            self.urls = [u.strip() for u in furl]
 
         # min date review to scrape
         self.min_date_review = datetime.strptime(from_date, "%Y-%m-%d")
