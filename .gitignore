@@ -110,3 +110,5 @@ test/
 *.html
 *.txt
 !requirements.txt
+
+*.json
