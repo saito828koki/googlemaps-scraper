@@ -4,44 +4,37 @@ import argparse
 import logging
 import os
 import sys
-from datetime import datetime, timedelta
-import jaydebeapi
+import json
 
-from dotenv import load_dotenv
-
+from pathlib import Path
 from googlemaps import GoogleMapsScraper
+import requests
 
-load_dotenv()
 
-DRIVER = os.getenv("DRIVER")
-DB_URL = os.getenv("DB_URL")
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
-H2JAR_PATH = os.getenv("H2JAR_PATH")
+with Path("constants.json").open(mode="r") as fin:
+    constants = json.load(fin)
+    REVIEW_POST_URL = constants["REVIEW_POST_URL"]
 
 
 class Monitor:
     def __init__(self, url_file):
+        self.names = []
+        self.urls = []
         # load urls file
         with open(url_file, "r") as furl:
-            self.urls = [u.strip() for u in furl]
+            for row in furl:
+                name, url = row.split()
+                self.names.append(name)
+                self.urls.append(url)
 
         # logging
         self.logger = self.__get_logger()
-        # connect to H2 DATABASE
-        self.connection = jaydebeapi.connect(
-            DRIVER,
-            DB_URL,
-            [USERNAME, PASSWORD],
-            H2JAR_PATH,
-        )
-        self.cursor = self.connection.cursor()
 
     def scrape_gm_reviews(self):
         # init scraper and incremental add reviews
         # TO DO: pass logger as parameter to log into one single file?
         with GoogleMapsScraper() as scraper:
-            for url in self.urls:
+            for name, url in zip(self.names, self.urls):
                 try:
                     status = scraper.sort_by(url, 1)  # sort by newest
                     if status == 0:
@@ -53,8 +46,10 @@ class Monitor:
                             if not reviews:
                                 break
 
-                            for r in reviews:
-                                stop = self.__stop(r)
+                            for review in reviews:
+                                review["placeUrl"] = url
+                                review["placeName"] = name
+                                stop = self.__stop(review)
                                 if not stop:
                                     n_new_reviews += 1
                                 else:
@@ -76,46 +71,12 @@ class Monitor:
                         "{}: {}, {}, {}".format(url, exc_type, fname, exc_tb.tb_lineno)
                     )
 
-    def __parse_relative_date(self, string_date):
-        curr_date = datetime.now()
-        split_date = string_date.split(" ")
-
-        n = split_date[0]
-        delta = split_date[1]
-
-        if delta == "year":
-            return curr_date - timedelta(days=365)
-        elif delta == "years":
-            return curr_date - timedelta(days=365 * int(n))
-        elif delta == "month":
-            return curr_date - timedelta(days=30)
-        elif delta == "months":
-            return curr_date - timedelta(days=30 * int(n))
-        elif delta == "week":
-            return curr_date - timedelta(weeks=1)
-        elif delta == "weeks":
-            return curr_date - timedelta(weeks=int(n))
-        elif delta == "day":
-            return curr_date - timedelta(days=1)
-        elif delta == "days":
-            return curr_date - timedelta(days=int(n))
-        elif delta == "hour":
-            return curr_date - timedelta(hours=1)
-        elif delta == "hours":
-            return curr_date - timedelta(hours=int(n))
-        elif delta == "minute":
-            return curr_date - timedelta(minutes=1)
-        elif delta == "minutes":
-            return curr_date - timedelta(minutes=int(n))
-        elif delta == "moments":
-            return curr_date - timedelta(seconds=1)
-
-    def __stop(self, r, collection):
-        is_old_review = collection.find_one({"id_review": r["id_review"]})
-        if is_old_review is None and r["timestamp"] >= self.min_date_review:
-            return False
+    def __stop(self, review: dict):
+        response = requests.post(REVIEW_POST_URL, json=review)
+        if response.status_code == 200:
+            return response.json()["result"]
         else:
-            return True
+            raise Exception("Error occurred.")
 
     def __get_logger(self):
         # create logger
@@ -137,11 +98,10 @@ class Monitor:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Monitor Google Maps places")
     parser.add_argument("--i", type=str, default="urls.txt", help="target URLs file")
-    parser.add_argument("--from-date", type=str)  # start date in format: YYYY-MM-DD
 
     args = parser.parse_args()
 
-    monitor = Monitor(args.i, args.from_date)
+    monitor = Monitor(args.i)
 
     try:
         monitor.scrape_gm_reviews()

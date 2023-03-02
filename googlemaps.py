@@ -264,7 +264,10 @@ class GoogleMapsScraper:
         return item
 
     def trim_review_text(self, review_text: str):
-        return review_text.split("(Original)")[-1].strip()
+        if "(Original)" in review_text:
+            return review_text.split("(Original)")[-1].strip()
+        else:
+            return review_text.split("(Translated by Google)")[0].strip()
 
     def __parse_place(self, response):
         place = {}
