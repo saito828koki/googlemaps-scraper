@@ -3,7 +3,7 @@ import itertools
 import logging
 import time
 import traceback
-from datetime import datetime
+from name2nat import Name2nat
 
 import numpy as np
 import pandas as pd
@@ -15,6 +15,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
+from lingua import Language, LanguageDetectorBuilder
 
 GM_WEBPAGE = "https://www.google.com/maps/"
 MAX_WAIT = 10
@@ -27,6 +28,10 @@ class GoogleMapsScraper:
         self.debug = debug
         self.driver = self.__get_driver()
         self.logger = self.__get_logger()
+        self.language_detector = LanguageDetectorBuilder.from_languages(
+            *(Language.all())
+        ).build()
+        self.name2nationality = Name2nat()
 
     def __enter__(self):
         return self
@@ -236,11 +241,25 @@ class GoogleMapsScraper:
         user_url = review.find("a")["href"]
 
         item["id_review"] = id_review
-        item["caption"] = self.trim_review_text(review_text)
+        caption = self.trim_review_text(review_text)
+        item["caption"] = caption
         item["rating"] = rating
         item["username"] = username
         item["url_user"] = user_url
-
+        nationality_estimated_by_caption = self.language_detector.detect_language_of(
+            caption
+        )
+        if not nationality_estimated_by_caption:
+            estimated_nationality, highest_prob = self.name2nationality(username)[0][1][
+                0
+            ]
+            if highest_prob < 0.5:
+                estimated_nationality = "UNKNOWN"
+            else:
+                estimated_nationality.upper()
+        else:
+            estimated_nationality = nationality_estimated_by_caption.name
+        item["estimated_nationality"] = estimated_nationality
         return item
 
     def trim_review_text(self, review_text: str):
