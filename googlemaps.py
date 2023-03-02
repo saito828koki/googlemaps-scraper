@@ -236,12 +236,15 @@ class GoogleMapsScraper:
         user_url = review.find("a")["href"]
 
         item["id_review"] = id_review
-        item["caption"] = review_text
+        item["caption"] = self.trim_review_text(review_text)
         item["rating"] = rating
         item["username"] = username
         item["url_user"] = user_url
 
         return item
+
+    def trim_review_text(self, review_text: str):
+        return review_text.split("(Original)")[-1].strip()
 
     def __parse_place(self, response):
         place = {}
