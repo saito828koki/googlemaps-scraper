@@ -212,10 +212,11 @@ class GoogleMapsScraper:
         parsed_reviews = []
         for index, review in enumerate(rblock):
             if index >= offset:
-                parsed_reviews.append(self.__parse(review))
+                parsed_review = self.__parse(review)
+                parsed_reviews.append(parsed_review)
 
                 # logging to std out
-                print(self.__parse(review))
+                print(parsed_review)
 
         return parsed_reviews
 
