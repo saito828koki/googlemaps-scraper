@@ -241,12 +241,12 @@ class GoogleMapsScraper:
         rating = float(review.find("span", class_="kvMYJc")["aria-label"].split(" ")[1])
         user_url = review.find("a")["href"]
 
-        item["id_review"] = id_review
+        item["id"] = id_review
         caption = self.trim_review_text(review_text)
         item["caption"] = caption
         item["rating"] = rating
-        item["username"] = username
-        item["url_user"] = user_url
+        item["userName"] = username
+        item["userUrl"] = user_url
         nationality_estimated_by_caption = self.language_detector.detect_language_of(
             caption
         )
@@ -260,7 +260,7 @@ class GoogleMapsScraper:
                 estimated_nationality.upper()
         else:
             estimated_nationality = nationality_estimated_by_caption.name
-        item["estimated_nationality"] = estimated_nationality
+        item["estimatedNationality"] = estimated_nationality
         return item
 
     def trim_review_text(self, review_text: str):
