@@ -74,7 +74,11 @@ class Monitor:
     def __stop(self, review: dict):
         response = requests.post(REVIEW_POST_URL, json=review)
         if response.status_code == 200:
-            return response.json()["result"]
+            result = response.json()["result"]
+            if result == "Success":
+                return False
+            else:
+                return True
         else:
             raise Exception("Error occurred.")
 
